@@ -1,5 +1,5 @@
 # Project Bing Bong
-A placeholder name.
+Where the bing is always bong
 
 ### Welcome to the Github!
 Here we can commit changes and sync our project in godot. In addition we will be using Trello to organize our workflow.
