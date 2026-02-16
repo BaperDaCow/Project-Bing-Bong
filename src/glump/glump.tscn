@@ -1,15 +1,32 @@
 [gd_scene format=3 uid="uid://cb6nihs78nanq"]
 
+[ext_resource type="Script" uid="uid://bkidxpwcfin81" path="res://src/glump/glump.gd" id="1_7delp"]
 [ext_resource type="Script" uid="uid://dr8bvnfebp76" path="res://addons/health_hitbox_hurtbox/health/health.gd" id="1_cmaiv"]
+[ext_resource type="Script" uid="uid://ctuf38y050aep" path="res://addons/health_hitbox_hurtbox/2d/hurt_box_2d/hurt_box_2d.gd" id="2_6hnjm"]
+[ext_resource type="Script" uid="uid://b1vnxk5bfh6el" path="res://addons/health_hitbox_hurtbox/2d/hit_box_2d/hit_box_2d.gd" id="3_hi06h"]
+[ext_resource type="Script" uid="uid://hrwhd52e5mkq" path="res://addons/health_hitbox_hurtbox/resources/health_action.gd" id="4_nqna4"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6hnjm"]
 size = Vector2(47, 44)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hi06h"]
+size = Vector2(47, 44)
+
+[sub_resource type="Resource" id="Resource_7delp"]
+script = ExtResource("4_nqna4")
+amount = 20
+metadata/_custom_type_script = "uid://hrwhd52e5mkq"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_nqna4"]
+size = Vector2(47, 44)
+
 [node name="Glump" type="CharacterBody2D" unique_id=1800715244]
+script = ExtResource("1_7delp")
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=1247042416]
 offset_right = 49.0
 offset_bottom = 46.0
+pivot_offset = Vector2(24.5, 46)
 color = Color(0.59545726, 0.38021857, 0.10808074, 1)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2056259942]
@@ -18,3 +35,26 @@ shape = SubResource("RectangleShape2D_6hnjm")
 
 [node name="Health" type="Node" parent="." unique_id=1971889617]
 script = ExtResource("1_cmaiv")
+current = 50
+max = 50
+
+[node name="HurtBox2D" type="Area2D" parent="." unique_id=121022576 node_paths=PackedStringArray("health")]
+script = ExtResource("2_6hnjm")
+health = NodePath("../Health")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtBox2D" unique_id=243647803]
+position = Vector2(24.5, 23)
+shape = SubResource("RectangleShape2D_hi06h")
+
+[node name="HitBox2D" type="Area2D" parent="." unique_id=1392398546]
+script = ExtResource("3_hi06h")
+actions = Array[ExtResource("4_nqna4")]([SubResource("Resource_7delp")])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox2D" unique_id=1536791973]
+position = Vector2(24.5, 23)
+shape = SubResource("RectangleShape2D_nqna4")
+
+[node name="HopTimer" type="Timer" parent="." unique_id=826075451]
+autostart = true
+
+[connection signal="timeout" from="HopTimer" to="." method="_on_hop_timer_timeout"]

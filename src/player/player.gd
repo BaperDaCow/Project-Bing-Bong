@@ -4,11 +4,12 @@ extends CharacterBody2D
 signal wall_entered
 signal wall_exited
 
+# 1. EXPORTS FIRST (So they are declared before being used in math)
 @export var flip_h: bool: set = set_flip_h
 
 @export_group("Horizontal Movement")
 @export var max_speed: float
-@export_range(1.0, 5.0) var max_h_velocity_ratio: float # Multiplied by max_speed
+@export_range(1.0, 5.0) var max_h_velocity_ratio: float
 
 @export_subgroup("On Floor")
 @export_range(0.0, 1.0) var running_acc_time: float
@@ -31,8 +32,8 @@ signal wall_exited
 @export var jump_height: float
 @export_range(0.0, 1.0) var jump_time_to_peak: float
 @export_range(0.0, 1.0) var jump_time_to_land: float
-@export_range(1.0, 5.0) var max_up_velocity_ratio: float # Multiplied by jump_velocity
-@export var jump_peak_boost: float # Boost applied to horizontal velocity after reaching jump peak
+@export_range(1.0, 5.0) var max_up_velocity_ratio: float
+@export var jump_peak_boost: float
 @export_range(0.0, 1.0) var jump_peak_gravity_ratio: float
 @export var corner_correction_distance: int
 @export var oneway_platform_assist_distance: int
@@ -41,15 +42,14 @@ signal wall_exited
 @export_subgroup("Wall Slide")
 @export var max_wall_slide_speed: float
 @export_range(1.0, 2.0) var down_held_wall_slide_ratio: float
-@export_range(0.0, 1.0) var wall_slide_acc_time: float # Downward acceleration
+@export_range(0.0, 1.0) var wall_slide_acc_time: float
 
 @export_subgroup("Wall Jump")
-@export_range(0.0, 1.0) var wall_jump_v_velocity_ratio: float # Multiplied by jump_velocity
+@export_range(0.0, 1.0) var wall_jump_v_velocity_ratio: float
 @export var wall_jump_h_velocity: float
-# Horizontal acceleration/deceleration after wall jumping.
 @export_range(0.0, 1.0) var wall_jumping_acc_time: float
 @export_range(0.0, 1.0) var wall_jumping_dec_time: float
-@export_range(0.0, 1.0) var wall_jumping_towards_wall_dec_time: float # While the player is moving towards the wall
+@export_range(0.0, 1.0) var wall_jumping_towards_wall_dec_time: float
 
 @export_group("Dash")
 @export var dash_speed: float
@@ -71,14 +71,16 @@ signal wall_exited
 @export_range(0.0, 1.0) var stretch_width_scale: float
 @export_range(1.0, 2.0) var stretch_height_scale: float
 
+# 2. VARIABLES AND SIGNALS
 var dash_allowed: bool = false
-var _on_wall: bool = false: # This variable mustn't be edited manually
+var _on_wall: bool = false:
 	set(value):
 		if value != _on_wall:
 			(wall_entered if value else wall_exited).emit()
-		
 		_on_wall = value
 
+# 3. ONREADY (Nodes and Math)
+@onready var health_node: Health = $Health
 @onready var jump_velocity: float = -(2.0 * jump_height) / jump_time_to_peak
 @onready var max_up_velocity: float = jump_velocity * max_up_velocity_ratio
 @onready var max_h_velocity: float = max_speed * max_h_velocity_ratio
@@ -99,8 +101,20 @@ var _on_wall: bool = false: # This variable mustn't be edited manually
 
 @onready var _default_shape_scale: Vector2 = shape.scale
 
+# 4. CORE FUNCTIONS
+func _ready() -> void:
+	_default_shape_scale = shape.scale
+	if health_node:
+		health_node.died.connect(_on_died)
+
 func _physics_process(_delta: float) -> void:
 	_on_wall = is_on_wall()
+
+func _on_died(_entity: Node) -> void:
+	print("PLAYER DIED. SHUTTING DOWN.")
+	get_tree().quit()
+
+# --- MOVEMENT LOGIC ---
 
 func get_facing_dir() -> float:
 	return -1.0 if flip_h else 1.0
@@ -108,13 +122,11 @@ func get_facing_dir() -> float:
 func set_flip_h(value: bool) -> void:
 	if not is_node_ready():
 		await ready
-	
 	flip_h = value
 	shape.scale.x = absf(shape.scale.x) * get_facing_dir()
 
 func update_flip_h() -> void:
 	var h_input_dir: float = signf(get_input_vector().x)
-	
 	if h_input_dir:
 		flip_h = h_input_dir != 1.0
 
@@ -124,13 +136,8 @@ func get_input_vector() -> Vector2:
 func apply_movement(delta: float, acc_time: float, dec_time: float) -> void:
 	var speed_dir: float = max_speed * get_input_vector().x
 	var h_velocity_dir: float = signf(velocity.x)
-	var apply_acc: bool = (
-			h_velocity_dir == 0.0
-			or (velocity.x - speed_dir) * h_velocity_dir <= 0.0
-	)
-	
+	var apply_acc: bool = (h_velocity_dir == 0.0 or (velocity.x - speed_dir) * h_velocity_dir <= 0.0)
 	var step: float = max_speed / (acc_time if apply_acc else dec_time)
-	
 	velocity.x = move_toward(velocity.x, speed_dir, step * delta)
 	velocity.x = clampf(velocity.x, -max_h_velocity, max_h_velocity)
 
@@ -151,10 +158,7 @@ func calculate_gravity() -> float:
 	)
 
 func calculate_gravity_limit() -> float:
-	return gravity_limit * (
-			down_held_gravity_ratio if Input.is_action_pressed("down") and velocity.y > 0
-			else 1.0
-	)
+	return gravity_limit * (down_held_gravity_ratio if Input.is_action_pressed("down") and velocity.y > 0 else 1.0)
 
 func jump() -> void:
 	velocity.y = jump_velocity
@@ -190,7 +194,6 @@ func apply_wall_slide(delta: float) -> void:
 	velocity.y = move_toward(velocity.y, calculate_wall_slide_speed(), step * delta)
 
 func can_wall_slide() -> bool:
-	# Can wall slide if the player is touching the wall and moving towards it.
 	return is_on_wall() and get_input_vector().x * get_last_wall_dir() > 0
 
 func try_wall_slide() -> void:
@@ -198,18 +201,13 @@ func try_wall_slide() -> void:
 		state_machine.activate_state_by_name("WallSlideState")
 
 func calculate_wall_slide_speed() -> float:
-	return max_wall_slide_speed * (
-			down_held_wall_slide_ratio if Input.is_action_pressed("down")
-			else 1.0
-	)
+	return max_wall_slide_speed * (down_held_wall_slide_ratio if Input.is_action_pressed("down") else 1.0)
 
 func wall_jump() -> void:
 	var wall_jump_dir: float = -get_last_wall_dir()
-	
 	velocity.y = jump_velocity * wall_jump_v_velocity_ratio
 	velocity.x = wall_jump_h_velocity * wall_jump_dir
 	apply_stretch()
-	
 	state_machine.activate_state_by_name.call_deferred("WallJumpState")
 
 func try_wall_jump(ignore_wall: bool = false) -> void:
@@ -234,11 +232,7 @@ func _on_wall_exited() -> void:
 
 func calculate_wall_jumping_dec_time() -> float:
 	var h_input_dir: float = signf(get_input_vector().x)
-	
-	return (
-			wall_jumping_towards_wall_dec_time if h_input_dir == get_last_wall_dir()
-			else wall_jumping_dec_time
-	)
+	return (wall_jumping_towards_wall_dec_time if h_input_dir == get_last_wall_dir() else wall_jumping_dec_time)
 
 func can_dash() -> bool:
 	return dash_allowed and dash_cooldown_timer.is_stopped()
@@ -249,60 +243,43 @@ func try_dash() -> void:
 
 func try_corner_correction(delta: float) -> void:
 	var v_motion: Vector2 = Vector2(0.0, velocity.y * delta)
-	
 	if not test_move(global_transform, v_motion):
 		return
-	
-	# Multiplied by 2 so each offset increments by 0.5 instead of 1.0.
 	for offset_step: int in range(1, corner_correction_distance * 2 + 1):
 		var offset: float = offset_step / 2.0
-	
 		for dir: float in [-1.0, 1.0]:
 			var h_offset: Vector2 = Vector2(offset * dir, 0)
 			var test_transform: Transform2D = global_transform.translated(h_offset)
-			
 			if not test_move(test_transform, v_motion):
 				translate(h_offset)
-				
-				# Stop the player if they are moving opposite to the corner's direction.
 				if velocity.x * dir < 0.0:
 					velocity.x = 0.0
-				
 				return
 
 func try_oneway_platform_assist() -> void:
 	if test_move(global_transform, Vector2.DOWN):
 		return
-	
-	# Multiplied by 2 so each offset increments by 0.5 instead of 1.0.
 	for offset_step: int in range(oneway_platform_assist_distance * 2 + 1):
 		var offset: float = offset_step / 2.0
 		var v_offset: Vector2 = Vector2.UP * offset
-		
 		var test_transform: Transform2D = global_transform.translated(v_offset)
-		
 		if test_move(test_transform, Vector2.DOWN):
-			# Make sure the player doesn't get stuck.
 			if not test_move(test_transform, Vector2.UP):
 				translate(v_offset)
-			
 			return
 
 func apply_move_anim() -> void:
 	var max_move_skew_rad: float = deg_to_rad(max_move_skew)
-	
 	shape.skew = remap(velocity.x, -max_speed, max_speed, -max_move_skew_rad, max_move_skew_rad)
 
 func update_shape_scale(delta: float) -> void:
 	var target: Vector2 = _default_shape_scale * shape.scale.sign()
 	var frame_weight: float = 1.0 - pow(1.0 - shape_rescale_weight, 60.0 * delta)
-	
 	shape.scale = shape.scale.lerp(target, frame_weight)
 
 func apply_squash() -> void:
 	var max_fall_speed: float = calculate_gravity_limit()
 	var vertical_speed: float = get_position_delta().y / get_physics_process_delta_time()
-	
 	shape.scale.x *= remap(vertical_speed, 0.0, max_fall_speed, squash_width_scale_at_rest, squash_width_scale_at_max_fall)
 	shape.scale.y *= remap(vertical_speed, 0.0, max_fall_speed, squash_height_scale_at_max_fall, squash_height_scale_at_rest)
 
