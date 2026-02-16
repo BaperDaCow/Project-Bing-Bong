@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://c04jfrcrutvnd"]
 
 [ext_resource type="PackedScene" uid="uid://ducp7rsjpf40n" path="res://src/player/player.tscn" id="1_cxdpd"]
+[ext_resource type="Script" uid="uid://dr8bvnfebp76" path="res://addons/health_hitbox_hurtbox/health/health.gd" id="2_vs6eh"]
+[ext_resource type="Script" uid="uid://ctuf38y050aep" path="res://addons/health_hitbox_hurtbox/2d/hurt_box_2d/hurt_box_2d.gd" id="3_ax1fg"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_6fe78"]
 size = Vector3(192, 48, 1)
@@ -19,6 +21,9 @@ size = Vector3(48, 192, 1)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cxdpd"]
 size = Vector2(48, 192)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_l0uto"]
+size = Vector2(46, 63)
 
 [node name="TestLevel1" type="Node2D" unique_id=544908357]
 metadata/_edit_lock_ = true
@@ -83,3 +88,14 @@ shape = SubResource("RectangleShape2D_cxdpd")
 
 [node name="Player" parent="." unique_id=609352748 instance=ExtResource("1_cxdpd")]
 position = Vector2(189, 633)
+
+[node name="HealthComponent" type="Node" parent="Player" unique_id=846958666]
+script = ExtResource("2_vs6eh")
+
+[node name="Area2D" type="Area2D" parent="Player" unique_id=57369625 node_paths=PackedStringArray("health")]
+script = ExtResource("3_ax1fg")
+health = NodePath("../HealthComponent")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/Area2D" unique_id=1752165200]
+position = Vector2(0, -31.5)
+shape = SubResource("RectangleShape2D_l0uto")
