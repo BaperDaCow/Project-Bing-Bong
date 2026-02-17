@@ -15,7 +15,7 @@ size = Vector2(195, 48)
 size = Vector3(192, 48, 1)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vs6eh"]
-size = Vector2(1040, 48)
+size = Vector2(962, 48)
 
 [sub_resource type="BoxMesh" id="BoxMesh_cxdpd"]
 size = Vector3(48, 192, 1)
@@ -57,12 +57,12 @@ metadata/_edit_group_ = true
 
 [node name="MeshInstance2D" type="MeshInstance2D" parent="Floor3" unique_id=674850120]
 self_modulate = Color(0, 0, 0, 1)
-position = Vector2(425, 0)
-scale = Vector2(5.4270835, 1)
+position = Vector2(384.99997, 0)
+scale = Vector2(5.0104165, 1)
 mesh = SubResource("BoxMesh_ebpnw")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="Floor3" unique_id=1211431306]
-position = Vector2(424, 0)
+position = Vector2(385, 0)
 shape = SubResource("RectangleShape2D_vs6eh")
 
 [node name="Wall1" type="StaticBody2D" parent="." unique_id=1213555957]
