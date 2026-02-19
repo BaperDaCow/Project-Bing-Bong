@@ -93,11 +93,11 @@ position = Vector2(189, 633)
 [node name="Health" type="Node" parent="Player" unique_id=846958666]
 script = ExtResource("2_vs6eh")
 
-[node name="Area2D" type="Area2D" parent="Player" unique_id=57369625 node_paths=PackedStringArray("health")]
+[node name="HurtBox2D" type="Area2D" parent="Player" unique_id=57369625 node_paths=PackedStringArray("health")]
 script = ExtResource("3_ax1fg")
 health = NodePath("../Health")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/Area2D" unique_id=1752165200]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/HurtBox2D" unique_id=1752165200]
 position = Vector2(0, -31.5)
 shape = SubResource("RectangleShape2D_l0uto")
 
