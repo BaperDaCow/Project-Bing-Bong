@@ -71,6 +71,13 @@ dash={
 ]
 }
 
+[layer_names]
+
+2d_physics/layer_1="Player Hurtbox"
+2d_physics/layer_2="Glump HitBox"
+2d_physics/layer_3="Glump Hurtbox"
+2d_physics/layer_4="Player Weapon"
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

@@ -39,6 +39,7 @@ current = 50
 max = 50
 
 [node name="HurtBox2D" type="Area2D" parent="." unique_id=121022576 node_paths=PackedStringArray("health")]
+collision_layer = 4
 script = ExtResource("2_6hnjm")
 health = NodePath("../Health")
 
@@ -47,6 +48,7 @@ position = Vector2(24.5, 23)
 shape = SubResource("RectangleShape2D_hi06h")
 
 [node name="HitBox2D" type="Area2D" parent="." unique_id=1392398546]
+collision_layer = 2
 script = ExtResource("3_hi06h")
 actions = Array[ExtResource("4_nqna4")]([SubResource("Resource_7delp")])
 
